@@ -1,0 +1,5 @@
+.env
+docker-compose.yml
+docker-compose.yaml
+*.tar
+*.tar.gz

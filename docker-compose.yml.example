@@ -1,0 +1,41 @@
+services:
+  kimi:
+    build: .
+    image: kimi-cli
+    environment:
+      # ===== Required: Kimi API Key =====
+      # Get from: https://www.kimi.com/code/console
+      - KIMI_API_KEY=${KIMI_API_KEY}
+
+      # ===== Required: Base URL for Kimi Code =====
+      - KIMI_BASE_URL=${KIMI_BASE_URL:-https://api.kimi.com/coding/v1}
+
+      # ===== Required: Default Model =====
+      # This tells kimi which model to use without interactive selection
+      - KIMI_MODEL_NAME=${KIMI_MODEL_NAME:-kimi-k2-turbo}
+ 
+      # ===== Optional: Model Settings =====
+      # - KIMI_MODEL_NAME=${KIMI_MODEL_NAME:-kimi-k2-thinking-turbo}
+      # - KIMI_BASE_URL=${KIMI_BASE_URL:-https://api.moonshot.cn/v1}
+      # - KIMI_MODEL_MAX_TOKENS=${KIMI_MODEL_MAX_TOKENS:-}
+      # - KIMI_MODEL_TEMPERATURE=${KIMI_MODEL_TEMPERATURE:-}
+      
+      # ===== Optional: Disable auto-update =====
+      - KIMI_CLI_NO_AUTO_UPDATE=1
+      
+    volumes:
+      # Mount current directory to /workspace
+      - .:/workspace
+      
+    # If you need to use host's proxy (when running Docker Desktop)
+    # Uncomment the line below and comment out the environment proxy settings above
+    network_mode: host
+    
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+
+    # Keep container running so you can exec into it
+    command: tail -f /dev/null
+
+
