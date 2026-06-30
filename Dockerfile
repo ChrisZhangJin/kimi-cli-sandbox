@@ -1,27 +1,22 @@
 # Dockerfile for Kimi Code CLI (Optimized for China)
-# 
-# This Dockerfile builds an image with kimi-cli pre-installed.
-# You can use it by setting the KIMI_API_KEY environment variable
-# without needing to go through the browser authentication flow.
+#
+# Builds an image with the official Kimi Code CLI (K2.7+ native binary).
+# Configure via env vars at runtime — no config file needed.
 #
 # Build:
-#   docker build -t kimi-cli .
+#   docker build -t kimi-sandbox:0.2.0 .
 #
 # Run with your API key:
-#   docker run -it -e KIMI_API_KEY=your_api_key_here kimi-cli
+#   docker run -it -e KIMI_API_KEY=your_api_key_here kimi-sandbox:0.2.0
 
-FROM python:3.12-slim
+FROM debian:trixie-slim
 
 # ===== China Mirrors Configuration =====
-# Use Tsinghua mirror for apt (Debian)
-RUN rm -f /etc/apt/sources.list.d/*.list && \
-    echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian trixie main contrib non-free" > /etc/apt/sources.list && \
-    echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian trixie-updates main contrib non-free" >> /etc/apt/sources.list && \
-    echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian-security trixie-security main contrib non-free" >> /etc/apt/sources.list
-
-# Use Tsinghua mirror for PyPI
-ENV PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
-ENV PIP_TRUSTED_HOST=pypi.tuna.tsinghua.edu.cn
+# Tsinghua mirror for apt (Debian trixie)
+RUN rm -f /etc/apt/sources.list.d/*.list /etc/apt/sources.list && \
+    echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian trixie main contrib non-free non-free-firmware" > /etc/apt/sources.list && \
+    echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian trixie-updates main contrib non-free non-free-firmware" >> /etc/apt/sources.list && \
+    echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian-security trixie-security main contrib non-free non-free-firmware" >> /etc/apt/sources.list
 
 # ===== Install Dependencies =====
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -30,25 +25,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# ===== Install kimi-cli =====
-RUN pip install --no-cache-dir kimi-cli
+# ===== Install Kimi Code CLI =====
+# Native binary installer treats KIMI_INSTALL_DIR as a --prefix root and writes
+# the binary to ${KIMI_INSTALL_DIR}/bin/kimi. Setting it to /usr/local lands the
+# binary at /usr/local/bin/kimi, which is already on PATH.
+ENV KIMI_INSTALL_DIR=/usr/local \
+    KIMI_NO_MODIFY_PATH=1
+RUN curl -fsSL https://code.kimi.com/kimi-code/install.sh | bash
 
-# ===== Create Default Config =====
-# Create the config directory and a default config file
-RUN mkdir -p /root/.kimi && \
-    echo 'default_model = "default"' > /root/.kimi/config.toml && \
-    echo '' >> /root/.kimi/config.toml && \
-    echo '[providers.kimi]' >> /root/.kimi/config.toml && \
-    echo 'type = "kimi"' >> /root/.kimi/config.toml && \
-    echo 'name = "kimi"' >> /root/.kimi/config.toml && \
-    echo 'base_url = "https://api.kimi.com/coding/v1"' >> /root/.kimi/config.toml && \
-    echo 'api_key = ""' >> /root/.kimi/config.toml && \
-    echo '' >> /root/.kimi/config.toml && \
-    echo '[models.default]' >> /root/.kimi/config.toml && \
-    echo 'model = "kimi-k2-turbo"' >> /root/.kimi/config.toml && \
-    echo 'alias = "default"' >> /root/.kimi/config.toml && \
-    echo 'provider = "kimi"' >> /root/.kimi/config.toml && \
-    echo 'max_context_size = 128000' >> /root/.kimi/config.toml
+# ===== Entrypoint =====
+# Generates ~/.kimi-code/config.toml from env vars on container start so the
+# API key never lands in an image layer. Old config.toml on the host wins.
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # ===== Configuration =====
 WORKDIR /workspace
@@ -56,5 +45,6 @@ WORKDIR /workspace
 # Disable auto-update check (not needed in container)
 ENV KIMI_CLI_NO_AUTO_UPDATE=1
 
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 # Default command shows help
 CMD ["kimi", "--help"]

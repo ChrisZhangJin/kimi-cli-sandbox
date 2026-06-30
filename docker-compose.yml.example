@@ -1,7 +1,7 @@
 services:
   kimi:
     build: .
-    image: kimi-cli
+    image: kimi-sandbox:0.2.0
     environment:
       # ===== Required: Kimi API Key =====
       # Get from: https://www.kimi.com/code/console
@@ -12,10 +12,9 @@ services:
 
       # ===== Required: Default Model =====
       # This tells kimi which model to use without interactive selection
-      - KIMI_MODEL_NAME=${KIMI_MODEL_NAME:-kimi-k2-turbo}
- 
+      - KIMI_MODEL_NAME=${KIMI_MODEL_NAME:-kimi-for-coding}
+
       # ===== Optional: Model Settings =====
-      # - KIMI_MODEL_NAME=${KIMI_MODEL_NAME:-kimi-k2-thinking-turbo}
       # - KIMI_BASE_URL=${KIMI_BASE_URL:-https://api.moonshot.cn/v1}
       # - KIMI_MODEL_MAX_TOKENS=${KIMI_MODEL_MAX_TOKENS:-}
       # - KIMI_MODEL_TEMPERATURE=${KIMI_MODEL_TEMPERATURE:-}

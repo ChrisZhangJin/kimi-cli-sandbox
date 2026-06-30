@@ -1,6 +1,6 @@
 # Kimi CLI Docker (China Optimized)
 
-A Docker setup for running [Kimi Code CLI](https://github.com/MoonshotAI/kimi-cli) with China mirrors and proxy support.
+A Docker setup for running the [Kimi Code CLI](https://www.kimi.com/code) (K2.7+ native binary) with China mirrors and proxy support.
 
 ## Features
 
@@ -131,13 +131,12 @@ docker run -it \
 | `HTTP_PROXY` | ❌ No | HTTP proxy URL |
 | `HTTPS_PROXY` | ❌ No | HTTPS proxy URL |
 | `NO_PROXY` | ❌ No | Comma-separated hosts to bypass proxy |
-| `KIMI_MODEL_NAME` | ❌ No | Model to use (default: `kimi-k2-turbo`) |
+| `KIMI_MODEL_NAME` | ❌ No | Model alias to use (default: `kimi-for-coding`) |
 
 ## China Mirrors Used
 
 - **APT (Debian)**: Tsinghua University Mirror
-- **PyPI**: Tsinghua University Mirror  
-- **GitHub (uv installer)**: USTC Mirror
+- **Kimi Code installer**: `code.kimi.com` (Moonshot's own CDN — no GFW hops)
 
 ## Troubleshooting
 
